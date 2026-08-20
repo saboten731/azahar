@@ -57,6 +57,8 @@ namespace graphics {
 static constexpr const char* graphics_api = citra_setting(BaseKeys::graphics_api);
 static constexpr const char* use_hw_shader = citra_setting(BaseKeys::use_hw_shader);
 static constexpr const char* use_shader_jit = citra_setting(BaseKeys::use_shader_jit);
+static constexpr const char* async_shader_compilation =
+    citra_setting(BaseKeys::async_shader_compilation);
 static constexpr const char* shaders_accurate_mul = citra_setting(BaseKeys::shaders_accurate_mul);
 static constexpr const char* use_disk_shader_cache = citra_setting(BaseKeys::use_disk_shader_cache);
 static constexpr const char* resolution_factor = citra_setting(BaseKeys::resolution_factor);
@@ -324,6 +326,21 @@ static constexpr retro_core_option_v2_definition option_definitions[] = {
             { nullptr, nullptr }
         },
         config::enabled
+    },
+    {
+        config::graphics::async_shader_compilation,
+        "Enable Async Shader Compilation",
+        "Async Shader Compilation",
+        "Compile shaders using background threads to avoid shader compilation stutter. "
+        "Temporary graphical glitches may occur while shaders are being compiled.",
+        nullptr,
+        config::category::graphics,
+        {
+            { config::enabled, "Enabled" },
+            { config::disabled, "Disabled" },
+            { nullptr, nullptr }
+        },
+        config::disabled
     },
     {
         config::graphics::shaders_accurate_mul,
@@ -913,6 +930,10 @@ static void ParseGraphicsOptions(void) {
     if (!LibRetro::CanUseJIT())
         Settings::values.use_shader_jit = false;
 #endif
+
+    Settings::values.async_shader_compilation =
+        LibRetro::FetchVariable(config::graphics::async_shader_compilation, config::disabled) ==
+        config::enabled;
 
     Settings::values.shaders_accurate_mul =
         LibRetro::FetchVariable(config::graphics::shaders_accurate_mul, config::enabled) ==
